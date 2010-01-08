@@ -48,7 +48,7 @@ Installation instructions:
 7. Create a daemon startup /home/user/msvc/start.sh script with the contents:
     source /home/user/msvc/env.sh
     wineserver -p
-    wine mspdbsrv.exe -start -spawn >/dev/null 2>&1 &
+    wine mspdbsrv.exe -start -shutdowntime -1 >/dev/null 2>&1 &
 
 8. Close the terminal
 
