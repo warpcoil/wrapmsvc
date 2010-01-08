@@ -1,0 +1,7 @@
+wrapmsvc-1.1, 2010-01-07
+    - fix README: "Win32 Development Tools" also needs to be installed with SDK
+    - explain in README why CMake has to be patched
+    - add licence file
+
+wrapmsvc-1.0, 2010-01-07
+    - initial release
