@@ -1,0 +1,12 @@
+diff -urN cmake-2.6.4.orig/Source/cmake.cxx cmake-2.6.4/Source/cmake.cxx
+--- cmake-2.6.4.orig/Source/cmake.cxx	2010-01-06 22:22:48.298585418 +0100
++++ cmake-2.6.4/Source/cmake.cxx	2010-01-06 22:23:18.149560275 +0100
+@@ -4177,7 +4177,7 @@
+   // to do the final link.  If mt has any value other than 0 or 1090650113
+   // then there was some problem with the command itself and there was an
+   // error so return the error code back out of cmake so make can report it.
+-  if(mtRet != 1090650113)
++  if(mtRet != 1090650113 && mtRet != 187)
+     {
+     return mtRet;
+     }

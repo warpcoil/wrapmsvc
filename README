@@ -1,0 +1,107 @@
+This program is a wrapper for running the MSVC compiler and related tools
+through Wine. It converts arguments with unix-style paths to Windows format,
+then invokes the target program.
+
+Installation instructions:
+(assuming you home folder is /home/user)
+
+1. Choose a Wine prefix
+    $ export WINEPREFIX=/home/user/.wine-sdk
+
+2. Install Windows 7 SDK with Winetricks:
+    $ wget http://www.kegel.com/wine/winetricks
+    $ sh winetricks psdkwin7
+    - When in the component selection screen, choose ONLY these:
+        - Windows Headers and Libraries
+        - Visual C++ Compilers
+        - Win32 Development Tools
+
+3. Setup Wine environment variables:
+    $ wine regedit
+    - Go to HKEY_CURRENT_USER/Environment
+    - Prepend values to the following variables, by pasting the literal values below,
+        to the beginning of the Value Data field.
+        Note that existing entries in PATH are wrong as they include double quoutes;
+        do NOT add any double quotes when prepending the values.
+    - Prepend to PATH: C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin;
+    - Prepend to PATH: C:\Program Files\Microsoft Visual Studio 9.0\VC\bin;
+    - Prepend to PATH: C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;
+    - Prepend to INCLUDE: C:\Program Files\Microsoft Visual Studio 9.0\VC\include;
+    - Prepend to LIB: C:\Program Files\Microsoft Visual Studio 9.0\VC\lib;
+    - At this point, you should be able to run "wine cl" and "wine rc".
+    
+4. Create folders to contain the wrappers
+    $ mkdir -p /home/user/msvc/bin
+
+5. Compile the wrappers:
+    $ cd /path/to/wrapmsvc/source
+    $ ./build.sh /home/user/msvc/bin/
+
+6. Create the environment script /home/user/env.sh, with the contents:
+    export WINEPREFIX=/home/user/.wine-sdk
+    export CL_CMD="c:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\bin\\cl.exe"
+    export LINK_CMD="c:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\bin\\link.exe"
+    export RC_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Bin\\rc.exe"
+    export MT_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Bin\\mt.exe"
+    export PATH="/home/user/msvc/bin:${PATH}"
+
+7. Create a daemon startup /home/user/msvc/start.sh script with the contents:
+    source /home/user/msvc/env.sh
+    wineserver -p
+    wine mspdbsrv.exe -start -spawn >/dev/null 2>&1 &
+
+8. Close the terminal
+
+
+Basic usage instructions:
+
+Before attempting to use the compiler, only once for every session:
+    $ sh /home/user/msvc/start.sh
+
+For each shell in the session once before using the compiler:
+    $ source /home/user/msvc/env.sh
+    $ cl.exe myprogram.c
+
+
+Instructions for setting up CMake:
+
+1. Perform the steps under "Installation instructions" above.
+
+2. Create the folder /home/user/win32-msvc
+
+3. Copy the file toolchain.cmake from the source dir to /home/user/win32-msvc/
+
+4. Open the file just copied, and adjust CMAKE_FIND_ROOT_PATH.
+
+5. Download CMake source: http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz
+
+6. Unpack cmake source code.
+
+7. In a terminal, enter the cmake source folder:
+    $ cd /home/user/cmake-2.6.4
+
+8. Apply patch cmake-mt-return-value.patch from the wrapper source folder:
+   (see below for why this is needed)
+    $ patch -p1 < /path/to/wrapmsvc/cmake-mt-return-value.patch
+
+9. Build and install cmake to the msvc folder
+    $ ./configure --prefix /home/user/msvc
+    $ make install
+
+CMake usage instructions:
+
+1. Perform the steps under "Basic usage instructions"
+
+2. Once in a shell where the wrapper was setup, use cmake with the following option:
+    -DCMAKE_TOOLCHAIN_FILE=/home/user/win32-msvc/toolchain.cmake
+
+
+Why does CMake need a patch?
+
+The tool mt.exe used by CMake has a particular return code with some semantics,
+but the return code is beyond the range 0-255 that programs in can return in unix-like
+systems can return. Therefore the wrapper returns a different code to CMake, which
+causes it to assume the operation failed.
+This is solved by translating this particular return code to a particilar wrapper
+return code in the range. CMake than has to be patched to treat that error code the
+same way it treats the original one.
