@@ -822,7 +822,7 @@ next_arg:;
     
     // start process
     PROCESS_INFORMATION pi;
-    if (!CreateProcessW(NULL, cmdline, NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
+    if (!CreateProcessW(NULL, cmdline, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
         fail("CreateProcessW failed");
     }
     
