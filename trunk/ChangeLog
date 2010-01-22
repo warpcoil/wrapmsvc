@@ -1,3 +1,7 @@
+wrapmsvc-1.2, 2010-01-22
+    - README: workaround Wine bug 21259
+    - prevent long delay when calling the target program
+
 wrapmsvc-1.1, 2010-01-07
     - fix README: "Win32 Development Tools" also needs to be installed with SDK
     - explain in README why CMake has to be patched
