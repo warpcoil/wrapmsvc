@@ -1,3 +1,6 @@
+wrapmsvc-1.3, 2012-01-28
+    - Fix crash connected with use of a nested callback function. (bug #1, reported and fixed by Victor Gaydov)
+
 wrapmsvc-1.2, 2010-01-22
     - README: workaround Wine bug 21259
     - prevent long delay when calling the target program
