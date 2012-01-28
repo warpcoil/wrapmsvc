@@ -123,6 +123,32 @@ void print_w (WCHAR *w, int len)
     HeapFree(GetProcessHeap(), 0, a);
 }
 
+Reactor r;
+int return_value;
+
+PROCESS_INFORMATION pi;
+
+// Handler called by the reactor when the process terminates
+void process_handler (void *unused)
+{
+    DWORD exit_code;
+    if (!GetExitCodeProcess(pi.hProcess, &exit_code)) {
+        fail("GetExitCodeProcess failed");
+    }
+    
+    #if defined(WRAP_MT)
+    if (exit_code == MT_MAGIC) {
+        exit_code = MT_MAGIC_CONV;
+    }
+    #endif
+    
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    
+    return_value = exit_code;
+    Reactor_Quit(&r);
+}
+    
 int main (int argc, char **argv)
 {
     char *cl_cmd = getenv(CMD_ENVVAR);
@@ -821,36 +847,11 @@ next_arg:;
     si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     
     // start process
-    PROCESS_INFORMATION pi;
     if (!CreateProcessW(NULL, cmdline, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
         fail("CreateProcessW failed");
     }
     
-    Reactor r;
     Reactor_Init(&r);
-    
-    int return_value;
-    
-    // Handler called by the reactor when the process terminates
-    void process_handler (void *unused)
-    {
-        DWORD exit_code;
-        if (!GetExitCodeProcess(pi.hProcess, &exit_code)) {
-            fail("GetExitCodeProcess failed");
-        }
-        
-        #if defined(WRAP_MT)
-        if (exit_code == MT_MAGIC) {
-            exit_code = MT_MAGIC_CONV;
-        }
-        #endif
-        
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-        
-        return_value = exit_code;
-        Reactor_Quit(&r);
-    }
     
     if (!Reactor_AddHandle(&r, pi.hProcess, process_handler, NULL)) {
         fail("Reactor_AddHandle failed");
