@@ -511,6 +511,9 @@ int main (int argc, char **argv)
             len >= 2 && (
                 arg[0] == '-' ||
                 (arg[0] == '/' && access(arg, F_OK) < 0)
+            #ifdef WRAP_LINK
+                || (arg[0] == '/' && !strcasecmp(arg + 1, "lib"))
+            #endif
             )
         ) {
             int optlen;
@@ -528,6 +531,9 @@ int main (int argc, char **argv)
                 !strcasecmp(arg + 1, "PDBSTRIPPED:none") ||
                 !strcasecmp(arg + 1, "PROFILE") ||
                 !strcasecmp(arg + 1, "RELEASE")
+            #ifdef WRAP_LINK
+                || !strcasecmp(arg + 1, "LIB")
+            #endif
             ) {
                 add_arg(arg, len);
                 continue;
