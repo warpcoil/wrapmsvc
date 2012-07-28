@@ -5,16 +5,26 @@ then invokes the target program.
 Installation instructions:
 (assuming you home folder is /home/user)
 
-1. Choose a Wine prefix
+1. Choose a (new!) Wine prefix and make sure it's 32-bit (or the SDK will not install)
     $ export WINEPREFIX=/home/user/.wine-sdk
+    $ export WINEARCH=win32
+    $ winecfg   (to create the prefix)
 
-2. Install Windows 7 SDK with Winetricks:
-    $ wget http://www.kegel.com/wine/winetricks
-    $ sh winetricks psdkwin7
+2. Install dependencies of Windows 7 SDK
+    $ wget http://winetricks.googlecode.com/svn/trunk/src/winetricks
+    $ chmod +x winetricks
+    $ ./winetricks dotnet20 dotnet40
+
+
+3. Install Windows 7 SDK 7.1. Download it from http://www.microsoft.com/en-us/download/details.aspx?id=8279
+    $ wine winsdk_web.exe
     - When in the component selection screen, choose ONLY these:
+      - Windows Native Code Development:
         - Windows Headers and Libraries
+        - Tools
         - Visual C++ Compilers
-        - Win32 Development Tools
+      - Redistributable Packages:
+        - Microsoft Visual C++ 2010
 
 3. Setup Wine environment variables:
     $ wine regedit
@@ -23,11 +33,9 @@ Installation instructions:
         to the beginning of the Value Data field.
         Note that existing entries in PATH are wrong as they include double quoutes;
         do NOT add any double quotes when prepending the values.
-    - Prepend to PATH: C:\Program Files\Microsoft SDKs\Windows\v7.0\Bin;
-    - Prepend to PATH: C:\Program Files\Microsoft Visual Studio 9.0\VC\bin;
-    - Prepend to PATH: C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;
-    - Prepend to INCLUDE: C:\Program Files\Microsoft Visual Studio 9.0\VC\include;
-    - Prepend to LIB: C:\Program Files\Microsoft Visual Studio 9.0\VC\lib;
+    - Prepend to PATH: C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE;C:\Program Files\Microsoft Visual Studio 10.0\VC\bin;C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin;
+    - Prepend to INCLUDE: C:\Program Files\Microsoft Visual Studio 10.0\VC\include;C:\Program Files\Microsoft SDKs\Windows\v7.1\Include;
+    - Prepend to LIB: C:\Program Files\Microsoft Visual Studio 10.0\VC\lib;C:\Program Files\Microsoft SDKs\Windows\v7.1\Lib;
     - At this point, you should be able to run "wine cl" and "wine rc".
     
 4. Create folders to contain the wrappers
@@ -37,15 +45,15 @@ Installation instructions:
     $ cd /path/to/wrapmsvc/source
     $ ./build.sh /home/user/msvc/bin/
 
-6. Create the environment script /home/user/env.sh, with the contents:
+6. Create the environment script /home/user/msvc/env.sh, with the contents:
     export WINEPREFIX=/home/user/.wine-sdk
-    export CL_CMD="c:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\bin\\cl.exe"
-    export LINK_CMD="c:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\bin\\link.exe"
-    export RC_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Bin\\rc.exe"
-    export MT_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.0\\Bin\\mt.exe"
+    export CL_CMD="c:\\Program Files\\Microsoft Visual Studio 10.0\\VC\\bin\\cl.exe"
+    export LINK_CMD="c:\\Program Files\\Microsoft Visual Studio 10.0\\VC\\bin\\link.exe"
+    export RC_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\rc.exe"
+    export MT_CMD="c:\\Program Files\\Microsoft SDKs\\Windows\\v7.1\\Bin\\mt.exe"
     export PATH="/home/user/msvc/bin:${PATH}"
 
-7. Create a daemon startup /home/user/msvc/start.sh script with the contents:
+7. Create the daemon startup script /home/user/msvc/start.sh with the contents:
     source /home/user/msvc/env.sh
     wineserver -p
     wine mspdbsrv.exe -start -shutdowntime -1 >/dev/null 2>&1 &
