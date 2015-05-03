@@ -1,0 +1,3 @@
+This program allows you to use the Microsoft C/C++ compiler (cl.exe) and related tools in a unix-like system, as if it was installed natively. Its main job is to convert unix-style paths on the command line to corresponding windows-style paths as seen from inside Wine, so the actual compiler is able to open and write files passed to it.
+The wrapper was tested to work with CMake, altough this requires a patch to CMake.
+Setup and usage instructions are in the README file in the source package.
